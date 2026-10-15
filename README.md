@@ -8,7 +8,7 @@ A compact operations ledger web app inspired by multi-page banking demos:
 
 ## Status
 
-State helpers and a working demo page (`index.html` / `js/app.js`) are in place. Styles will land in a follow-up commit.
+State helpers, demo page (`index.html` / `js/app.js`), and demo styles (`css/styles.css`) are in place.
 
 Demo credentials: `demo` / `ledger123`
 
