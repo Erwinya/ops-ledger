@@ -66,7 +66,7 @@ function renderLogin() {
     <form class="form" id="login-form">
       <label>Username<input name="username" value="demo" autocomplete="username" required /></label>
       <label>Password<input name="password" type="password" value="ledger123" autocomplete="current-password" required /></label>
-      <p class="error" id="login-error"></p>
+      <p class="error" id="login-error" role="alert" aria-live="polite"></p>
       <button class="btn" type="submit">Continue</button>
     </form>
   `,
@@ -87,7 +87,7 @@ function renderDashboard() {
       <div class="stat"><div class="label">Credits</div><div class="value">${credits}</div></div>
       <div class="stat"><div class="label">Debits</div><div class="value">${debits}</div></div>
     </div>
-    <p><a href="#/transactions">View recent transactions →</a></p>
+    <p><a href="#/transactions">View recent transactions â†’</a></p>
   `,
   );
 }
@@ -127,7 +127,7 @@ function renderTransfer() {
       <label>Destination<input name="to" placeholder="Ops-AP-8841" required /></label>
       <label>Amount<input name="amount" type="number" min="0.01" step="0.01" required /></label>
       <label>Note<input name="note" placeholder="Optional memo" /></label>
-      <p class="error" id="transfer-error"></p>
+      <p class="error" id="transfer-error" role="alert" aria-live="polite"></p>
       <button class="btn" type="submit">Submit transfer</button>
     </form>
   `,

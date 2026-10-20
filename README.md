@@ -8,7 +8,7 @@ A compact operations ledger web app inspired by multi-page banking demos:
 
 ## Status
 
-Demo app, styles, and CI checks are in place.
+Complete: state helpers, accessible demo page, styles, and CI.
 
 Demo credentials: `demo` / `ledger123`
 
