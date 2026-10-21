@@ -20,6 +20,8 @@ python -m http.server 5190
 
 Then open http://localhost:5190
 
+Demo credentials: `demo` / `ledger123`
+
 ## Module
 
 ```js
