@@ -22,6 +22,9 @@ Then open http://localhost:5190
 
 Demo credentials: `demo` / `ledger123`
 
+
+Demo state persists in `localStorage` under the key `ops-ledger-v1` (clear it to reset).
+
 ## Module
 
 ```js
