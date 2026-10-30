@@ -12,6 +12,11 @@ Complete: state helpers, accessible demo page, styles, and CI.
 
 Demo credentials: `demo` / `ledger123`
 
+
+## Screenshot
+
+![Ops Ledger dashboard](docs/dashboard.png)
+
 ## Run
 
 ```powershell
