@@ -72,6 +72,27 @@ th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-
 .debit { color: var(--bad); font-family: var(--mono); }
 .mono { font-family: var(--mono); }
 
+.filters {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr 0.9fr 0.9fr auto;
+  gap: 0.65rem;
+  align-items: end;
+  margin: 1rem 0 0.35rem;
+}
+.filters label {
+  display: grid;
+  gap: 0.28rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.empty {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 @media (max-width: 720px) {
   .stats { grid-template-columns: 1fr; }
+  .filters { grid-template-columns: 1fr 1fr; }
 }

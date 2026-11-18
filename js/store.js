@@ -16,6 +16,13 @@ const defaultState = () => ({
   },
 });
 
+let txSeq = 0;
+
+function nextTxId() {
+  txSeq += 1;
+  return `tx-${Date.now()}-${txSeq}`;
+}
+
 export function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -50,25 +57,74 @@ export function currentUser(state) {
   return state.users[state.session.username] || null;
 }
 
-export function transfer(state, { to, amount, note }) {
+/** Post a signed amount (positive = credit, negative = debit). */
+export function postTransaction(state, { amount, label, date } = {}) {
   const user = currentUser(state);
   if (!user) return { ok: false, error: "Not signed in." };
+  if (!Number.isFinite(amount) || amount === 0) {
+    return { ok: false, error: "Enter a non-zero amount." };
+  }
+  const description = String(label ?? "").trim();
+  if (!description) {
+    return { ok: false, error: "Description is required." };
+  }
+  const signed = Number(amount.toFixed(2));
+  const tx = {
+    id: nextTxId(),
+    date: date || new Date().toISOString().slice(0, 10),
+    label: description,
+    amount: signed,
+    type: signed > 0 ? "credit" : "debit",
+  };
+  user.transactions = [tx, ...user.transactions];
+  user.balance = Number((user.balance + signed).toFixed(2));
+  saveState(state);
+  return { ok: true, transaction: tx };
+}
+
+export function transfer(state, { to, amount, note }) {
+  const destination = String(to ?? "").trim();
+  if (!destination) {
+    return { ok: false, error: "Destination is required." };
+  }
   if (!Number.isFinite(amount) || amount <= 0) {
     return { ok: false, error: "Enter a valid amount." };
   }
+  const user = currentUser(state);
+  if (!user) return { ok: false, error: "Not signed in." };
   if (amount > user.balance) {
     return { ok: false, error: "Insufficient balance." };
   }
-  const label = note?.trim() || `Transfer to ${to || "external account"}`;
-  const tx = {
-    id: `tx-${Date.now()}`,
-    date: new Date().toISOString().slice(0, 10),
-    label,
-    amount: -amount,
-    type: "debit",
-  };
-  user.transactions = [tx, ...user.transactions];
-  user.balance = Number((user.balance - amount).toFixed(2));
-  saveState(state);
-  return { ok: true };
+  const label = String(note ?? "").trim() || `Transfer to ${destination}`;
+  return postTransaction(state, { amount: -amount, label });
+}
+
+export function filterTransactions(transactions, { query = "", type = "all", from = "", to = "" } = {}) {
+  const q = String(query).trim().toLowerCase();
+  return (transactions || []).filter((tx) => {
+    if (type === "credit" || type === "debit") {
+      if (tx.type !== type) return false;
+    }
+    if (from && tx.date < from) return false;
+    if (to && tx.date > to) return false;
+    if (q && !String(tx.label).toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+export function summarizeTransactions(transactions) {
+  let credits = 0;
+  let debits = 0;
+  let creditTotal = 0;
+  let debitTotal = 0;
+  for (const tx of transactions || []) {
+    if (tx.type === "credit") {
+      credits += 1;
+      creditTotal += tx.amount;
+    } else if (tx.type === "debit") {
+      debits += 1;
+      debitTotal += Math.abs(tx.amount);
+    }
+  }
+  return { credits, debits, creditTotal, debitTotal, count: credits + debits };
 }

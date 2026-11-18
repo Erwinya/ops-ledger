@@ -1,13 +1,16 @@
 import {
   currentUser,
+  filterTransactions,
   loadState,
   login,
   logout,
+  summarizeTransactions,
   transfer,
 } from "./store.js";
 
 const app = document.getElementById("app");
 let state = loadState();
+let txFilters = { query: "", type: "all", from: "", to: "" };
 
 function route() {
   const hash = location.hash.replace(/^#\/?/, "") || "dashboard";
@@ -75,8 +78,7 @@ function renderLogin() {
 
 function renderDashboard() {
   const user = currentUser(state);
-  const credits = user.transactions.filter((t) => t.type === "credit").length;
-  const debits = user.transactions.filter((t) => t.type === "debit").length;
+  const summary = summarizeTransactions(user.transactions);
   return shell(
     "dashboard",
     `
@@ -84,17 +86,18 @@ function renderDashboard() {
     <p class="lede">Account overview for local operations tracking.</p>
     <div class="stats">
       <div class="stat"><div class="label">Balance</div><div class="value">${money(user.balance)}</div></div>
-      <div class="stat"><div class="label">Credits</div><div class="value">${credits}</div></div>
-      <div class="stat"><div class="label">Debits</div><div class="value">${debits}</div></div>
+      <div class="stat"><div class="label">Credits</div><div class="value">${summary.credits}</div></div>
+      <div class="stat"><div class="label">Debits</div><div class="value">${summary.debits}</div></div>
     </div>
-    <p><a href="#/transactions">View recent transactions â†’</a></p>
+    <p><a href="#/transactions">View recent transactions →</a></p>
   `,
   );
 }
 
 function renderTransactions() {
   const user = currentUser(state);
-  const rows = user.transactions
+  const filtered = filterTransactions(user.transactions, txFilters);
+  const rows = filtered
     .map(
       (t) => `
       <tr>
@@ -108,11 +111,28 @@ function renderTransactions() {
     "transactions",
     `
     <h1>Transactions</h1>
-    <p class="lede">Newest activity first.</p>
-    <table>
+    <p class="lede">Newest activity first. Filter by text, type, or date.</p>
+    <form class="filters" id="tx-filters">
+      <label>Search<input name="query" value="${txFilters.query}" placeholder="Vendor, remittance…" /></label>
+      <label>Type
+        <select name="type">
+          <option value="all"${txFilters.type === "all" ? " selected" : ""}>All</option>
+          <option value="credit"${txFilters.type === "credit" ? " selected" : ""}>Credit</option>
+          <option value="debit"${txFilters.type === "debit" ? " selected" : ""}>Debit</option>
+        </select>
+      </label>
+      <label>From<input name="from" type="date" value="${txFilters.from}" /></label>
+      <label>To<input name="to" type="date" value="${txFilters.to}" /></label>
+      <button class="btn subtle" type="submit">Apply</button>
+    </form>
+    ${
+      filtered.length
+        ? `<table>
       <thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead>
       <tbody>${rows}</tbody>
-    </table>
+    </table>`
+        : `<p class="empty" role="status">No transactions match these filters.</p>`
+    }
   `,
   );
 }
@@ -150,6 +170,18 @@ function bindCommon() {
     }
     state = loadState();
     location.hash = "#/dashboard";
+  });
+
+  document.getElementById("tx-filters")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    txFilters = {
+      query: String(data.get("query") || ""),
+      type: String(data.get("type") || "all"),
+      from: String(data.get("from") || ""),
+      to: String(data.get("to") || ""),
+    };
+    route();
   });
 
   document.getElementById("transfer-form")?.addEventListener("submit", (e) => {
